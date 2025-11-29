@@ -6,11 +6,14 @@ import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.applicationautoscaling.EnableScalingProps;
 import software.amazon.awscdk.services.ec2.*;
+import software.amazon.awscdk.services.ecr.IRepository;
 import software.amazon.awscdk.services.ecr.Repository;
+import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.services.ecs.*;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFargateService;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
 import software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck;
+import software.amazon.awscdk.services.logs.ILogGroup;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.rds.*;
@@ -97,7 +100,7 @@ public class CloudCompareStack extends Stack {
         DatabaseCluster databaseCluster = DatabaseCluster.Builder.create(this, "DatabaseCluster")
                 .clusterIdentifier("cloud-compare-db")
                 .engine(DatabaseClusterEngine.auroraPostgres(AuroraPostgresClusterEngineProps.builder()
-                        .version(AuroraPostgresEngineVersion.VER_15_5)
+                        .version(AuroraPostgresEngineVersion.VER_16_4)
                         .build()))
                 .credentials(Credentials.fromSecret(databaseCredentials))
                 .defaultDatabaseName("cloudcompare")
@@ -121,10 +124,8 @@ public class CloudCompareStack extends Stack {
         // ECR Repository
         // ============================================
 
-        Repository ecrRepository = Repository.Builder.create(this, "BackendRepository")
-                .repositoryName("cloud-compare-backend")
-                .build();
-
+        IRepository ecrRepository = Repository.fromRepositoryName(
+                this, "BackendRepository", "cloud-compare-backend");
         // ============================================
         // ECS Cluster
         // ============================================
@@ -139,10 +140,8 @@ public class CloudCompareStack extends Stack {
         // CloudWatch Log Group
         // ============================================
 
-        LogGroup logGroup = LogGroup.Builder.create(this, "ApplicationLogGroup")
-                .logGroupName("/ecs/cloud-compare-backend")
-                .retention(RetentionDays.ONE_WEEK)
-                .build();
+        ILogGroup logGroup = LogGroup.fromLogGroupName(
+                this, "ApplicationLogGroup", "/ecs/cloud-compare-backend");
 
         // ============================================
         // Environment Variables for Spring Boot

@@ -13,7 +13,7 @@ public class InfrastructureApp {
                 .region("us-east-1")
                 .build();
 
-        new CloudCompareStack(app, "CloudCompareStack", StackProps.builder()
+        new CloudCompareStack(app, "CloudCompareAppStack", StackProps.builder()
                 .env(env)
                 .description("Complete infrastructure for Cloud Compare App")
                 .build());
